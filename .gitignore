@@ -3,7 +3,7 @@
 *.d.ts
 node_modules
 .DS_*
-.idea
+.idea*
 # CDK asset staging directory
 .cdk.staging
 cdk.out
