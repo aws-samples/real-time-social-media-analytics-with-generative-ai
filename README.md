@@ -132,6 +132,8 @@ mvn clean package
 cd ..
 ```
 
+> If you want to make any changes to the username and passwords used for Amazon Cognito and Amazon OpenSearch, you can do so by modifying the const at the beginning the cdk stack at *lib/real-time-social-media-analytics-gen-ai.ts*
+
 7. Bootstrap your AWS environment
 ```shell
 cdk bootstrap
@@ -261,7 +263,7 @@ This will open a tab in your browser. This is how we will be able to interact wi
 
 4. You will need to authenticate with the Cognito user that has been created during the CDK Deployment
 
-If you want to change the username and password you can do so in *lib/real-time-social-media-analytics-gen-ai.ts* in the **UserPoolUser**
+If you did not make any change to the CDK, the Cognito user created for you is: 
 
 * Username: FlinkGenAIBedrock@example.com,
 * Password: FlinkGenAIBedrock2024!
