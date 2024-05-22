@@ -142,7 +142,7 @@ cdk deploy
 ![AWS Cloudformation](diagrams-screenshots/cloudformation.png "AWS Cloudformation")
 
 11.	Go to Stacks
-12.	Select TwitterStreamingGenaiStack
+12.	Select RealTimeSocialMediaAnalyticsGenAi
 13.	Go to Outputs
 14.	You will need to copy the **StreamlitCommand**, which we will use for later
 
