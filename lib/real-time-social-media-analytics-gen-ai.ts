@@ -23,6 +23,12 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+
+    const opensearchUsername = "FlinkGenAIBedrock";
+    const opensearchPassword  = "FlinkGenAIBedrock2024!"
+    const cognitoUsername = 'FlinkGenAIBedrock@example.com';
+    const cognitoPassword = "FlinkGenAIBedrock2024!";
+
     //Jar Connectors
     const flinkApplicationJar = new assets.Asset(this, 'flinkApplicationJar', {
       path: ('./flink-bedrock/target/flink-bedrock-1.0-SNAPSHOT.jar'),
@@ -56,8 +62,8 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
 
     new UserPoolUser(this, 'CognitoUser', {
       userPool,
-      username: 'FlinkGenAIBedrock@example.com',
-      password: 'FlinkGenAIBedrock2024!',
+      username: cognitoUsername,
+      password: cognitoPassword,
       attributes: []
     });
 
@@ -193,8 +199,8 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
       securityGroups: [opensearchSecurityGroup],
       useUnsignedBasicAuth: true,
       fineGrainedAccessControl: {
-        masterUserName: 'FlinkGenAIBedrock',
-        masterUserPassword: SecretValue.unsafePlainText('FlinkGenAIBedrock2024!'),
+        masterUserName: opensearchUsername,
+        masterUserPassword: SecretValue.unsafePlainText(opensearchPassword),
       },
       nodeToNodeEncryption: true,
       enforceHttps: true,
@@ -342,8 +348,8 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
             propertyGroupId: 'FlinkApplicationProperties',
             propertyMap: {
               'os.domain': opensearchRAGDatabase.domainEndpoint,
-              'os.user': "FlinkGenAIBedrock",
-              'os.password':'FlinkGenAIBedrock2024!',
+              'os.user': opensearchUsername,
+              'os.password':opensearchPassword,
               'os.index': 'twitter-rag-index',
               'os.custom.index': 'twitter-custom-rag-index',
               'kinesis.source.stream': kinesisStream.streamName,
@@ -398,8 +404,8 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
       timeout: cdk.Duration.seconds(300),
       environment: {
         aosDomain: "https://"+opensearchRAGDatabase.domainEndpoint,
-        aosUser: "FlinkGenAIBedrock",
-        aosPassword: "FlinkGenAIBedrock2024!",
+        aosUser: opensearchUsername,
+        aosPassword: opensearchPassword,
         aosIndex: "twitter-rag-index",
         aosCustomIndex:'twitter-custom-rag-index',
         region: this.region
@@ -425,8 +431,8 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
       timeout: cdk.Duration.seconds(300),
       environment: {
         aosDomain: "https://"+opensearchRAGDatabase.domainEndpoint,
-        aosUser: "FlinkGenAIBedrock",
-        aosPassword: "FlinkGenAIBedrock2024!",
+        aosUser: opensearchUsername,
+        aosPassword: opensearchPassword,
       },
       initialPolicy: [
         new iam.PolicyStatement({
