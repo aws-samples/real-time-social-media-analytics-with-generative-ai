@@ -318,4 +318,4 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 
 In this sample, if you are going to consume data from Twitter using a developer account, you will be interacting with public data coming from the feed. This sample takes no responsibility of the comments or opinions that could be consumed from the social media application
 
-This sample is meant to be treated as an example use case where real time embeddings and RAG could add business value to analyze social media. It is not meant for production, however if needed you can leverage CDK Nag in order to identify best practices for all the services deployed in the sample.
+This sample is meant to be treated as an example use case where real time embeddings and RAG could add business value to analyze social media. It is not meant for production, however if needed you can leverage [CDK Nag](https://github.com/cdklabs/cdk-nag) in order to identify best practices for all the services deployed in the sample.
