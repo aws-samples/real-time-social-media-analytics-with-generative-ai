@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --prefer-ts-exts bin/twitter-streaming-genai.ts",
+  "app": "npx ts-node --prefer-ts-exts bin/real-time-social-media-analytics-gen-ai.ts",
   "watch": {
     "include": [
       "**"

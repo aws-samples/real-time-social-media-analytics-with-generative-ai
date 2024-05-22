@@ -19,7 +19,7 @@ import * as cognito from 'aws-cdk-lib/aws-cognito';
 import {AdvancedSecurityMode} from 'aws-cdk-lib/aws-cognito';
 import {UserPoolUser} from "./UserPoolUser";
 
-export class TwitterStreamingGenaiStack extends cdk.Stack {
+export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
