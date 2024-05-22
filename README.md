@@ -8,7 +8,8 @@ In this AWS Sample you will deploy an AWS Architecure that is able to combine st
 
 ## Solution Description
 
-1.	User inputs using the front-end application, hosted locally developed using Streamlit framework, the query terms, API Key and frequency of requests to be made to the X - Twitter API in a Streamlit front end UI. We also provide a front-end of a Kinesis Social Media Application where you can also send messages to be processed in case of not having a Twitter Developer Account
+1.	User logs in using Amazon Cognito User. Cognito will be used to authenticate all API Gateway Calls
+2.  User inputs using the front-end application, hosted locally developed using Streamlit framework, the query terms, API Key and frequency of requests to be made to the X - Twitter API in a Streamlit front end UI. We also provide a front-end of a Kinesis Social Media Application where you can also send messages to be processed in case of not having a Twitter Developer Account
 2.	Amazon Managed Service for Apache Flink is used to consume and process the tweets in real time and stores in state the parameters for making the API requests received from the front-end application
 3.	The streaming application using Flink’s Asynchronous Async I/O invokes Amazon Titan Embeddings Model hosted by Amazon Bedrock to embed the tweets.
 4.	Amazon Bedrock responds with the embeddings of the tweets
@@ -83,14 +84,17 @@ a.	Claude Instant
 ### Use CDK to create and deploy the solution stack
 
 We use AWS CDK CLI to deploy the Solution. The CDK will deploy the following:
+-   Amazon Cognito User Pool, App Client and User
 -	Kinesis Data Streams for receiving rules for pulling data from Twitter API
 -	Kinesis Data Streams for receiving user generated messages from StreamLit Application
 -	Amazon API Gateway to send events to Rules Kinesis Data Streams
 -	Amazon API Gateway to send custom messages to Kinesis Data Streams
 -	Amazon OpenSearch for Vector Database
+-   AWS Lambda Function for creating indexes in Amazon OpenSearch
 -	AWS Lambda Function with LangChain for invoking Amazon Bedrock and do semantic Search in Opensearch
--	API Gateway for invoking the Lambda Function.
+-	Amazon API Gateway for invoking the Lambda Function.
 -	Amazon Managed Service for Apache Flink, for processing the tweets and invoking Amazon Bedrock to do the Embeddings.
+-   AWS Lambda to start Managed Flink Application
 
 1. Git Clone the repository
 
@@ -98,10 +102,10 @@ We use AWS CDK CLI to deploy the Solution. The CDK will deploy the following:
 git clone <repo>
 ```
 
-1. CD into the folder
+1. CD into repo
 
 ```shell
-cd x-streaming-genai-cdk
+cd real-time-social-media-analytics-with-generative-ai
 ```
 
 3. Install libraries
@@ -240,7 +244,7 @@ With these steps we have configured the Data Ingestion part of the solution, we 
 1. In the project repository, cd into the streamlit folder
 
 ```shell
-cd streamlit/streamlit_twitter_rag
+cd streamlit
 ```
 
 In that folder you will find a Multi-Page Streamlit Application
@@ -250,10 +254,20 @@ In that folder you will find a Multi-Page Streamlit Application
 
 It follows this pattern
 ```shell
-streamlit run Bedrock_Chatbot.py --theme.base "dark" -- --bedrockApi <value> --rulesApi <value> --kinesisAPI <value>
+streamlit run Bedrock_Chatbot.py --theme.base "dark" -- --pool_id <pool_id> --app_client_id <app_client_id> --app_client_secret <app_client_secret>  --bedrockApi <value> --rulesApi <value> --kinesisAPI <value>
 ```
 
 This will open a tab in your browser. This is how we will be able to interact with our Flink Application and make questions related to the processed messages
+
+4. You will need to authenticate with the Cognito user that has been created during the CDK Deployment
+
+* Username: FlinkGenAIBedrock@example.com,
+* Password: FlinkGenAIBedrock2024!
+
+> You can create additional users in Amazon Cognito and delete this one if needed
+
+![Cognito-auth](diagrams-screenshots/cognito-auth.png "cognito-auth")
+
 
 3. If you are going to be using the Twitter API you will need to provide the following:
 
@@ -298,3 +312,10 @@ cdk destroy --all
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
+
+
+## Disclaimer
+
+In this sample, if you are going to consume data from Twitter using a developer account, you will be interacting with public data coming from the feed. This sample takes no responsibility of the comments or opinions that could be consumed from the social media application
+
+This sample is meant to be treated as an example use case where real time embeddings and RAG could add business value to analyze social media. It is not meant for production, however if needed you can leverage CDK Nag in order to identify best practices for all the services deployed in the sample.

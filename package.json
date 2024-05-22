@@ -1,8 +1,8 @@
 {
-  "name": "twitter-streaming-genai",
+  "name": "real-time-social-media-analytics-gen-ai",
   "version": "0.1.0",
   "bin": {
-    "twitter-streaming-genai": "bin/twitter-streaming-genai.js"
+    "twitter-streaming-genai": "bin/real-time-social-media-analytics-gen-ai.js"
   },
   "scripts": {
     "build": "tsc",
