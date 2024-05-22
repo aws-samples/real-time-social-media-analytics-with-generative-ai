@@ -261,6 +261,8 @@ This will open a tab in your browser. This is how we will be able to interact wi
 
 4. You will need to authenticate with the Cognito user that has been created during the CDK Deployment
 
+If you want to change the username and password you can do so in *lib/real-time-social-media-analytics-gen-ai.ts* in the **UserPoolUser**
+
 * Username: FlinkGenAIBedrock@example.com,
 * Password: FlinkGenAIBedrock2024!
 
