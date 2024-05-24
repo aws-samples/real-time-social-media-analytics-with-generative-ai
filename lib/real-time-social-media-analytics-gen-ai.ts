@@ -235,6 +235,15 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
         })
     );
 
+    // Manually identify the service-linked role associated with OpenSearch
+    const serviceLinkedRole = iam.Role.fromRoleArn(
+        this,
+        "ServiceLinkedRole",
+        "arn:aws:iam::aws:role/service-role/opensearchservice.amazonaws.com/AWSServiceRoleForAmazonOpenSearchService"
+    );
+
+    opensearchRAGDatabase.node.addDependency(serviceLinkedRole)
+
     // our KDA app needs access to describe kinesisanalytics
     const kdaAccessPolicy = new iam.PolicyDocument({
       statements: [
@@ -419,7 +428,7 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
     });
 
     const opensearchIndexCreationFunction = new lambda.Function(this, 'OpenSearch Index Creation Function', {
-      runtime: lambda.Runtime.PYTHON_3_10,
+      runtime: lambda.Runtime.PYTHON_3_12,
       functionName: "opensearch-index-function",
       handler: 'lambda_function.lambda_handler',
       vpc:vpc,
@@ -524,9 +533,38 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
 
 
     const bedrockResource = api.root.addResource('bedrock');
+
+    const requestValidator = new apigateway.RequestValidator(this, 'RequestValidadorBedrockAPI', {
+      restApi: api,
+      validateRequestBody: true,
+      validateRequestParameters: true,
+    });
+
+    // Define JSON Schema for request validation
+    const bedrockRequestModel = new apigateway.Model(this, 'RequestModel', {
+      restApi: api,
+      contentType: 'application/json',
+      schema: {
+        schema: apigateway.JsonSchemaVersion.DRAFT4,
+        title: 'BedrockRequestSchema',
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          message: { type: apigateway.JsonSchemaType.STRING },
+          index: { type: apigateway.JsonSchemaType.STRING }
+        },
+        required: ['message', 'index']
+      },
+    });
+
+
     bedrockResource.addMethod('POST', undefined, {
       authorizer: cognitoAuthorizerBedrock,
       authorizationType: AuthorizationType.COGNITO,
+      requestValidator,
+      requestModels: { 'application/json': bedrockRequestModel },
+      requestParameters: {
+        'method.request.header.Authorization': true,
+      },
     });
 
     // Create an IAM role for API Gateway to assume
@@ -554,21 +592,38 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
     // Create a resource for the API
     const kinesisProxyResource = kinesisProxyApi.root.addResource('kinesis');
 
+    // Create request validator
+    const requestValidatorKinesisProxy = new apigateway.RequestValidator(this, 'RequestValidatorKinesisProxy', {
+      restApi: kinesisProxyApi,
+      validateRequestBody: true,
+      validateRequestParameters: true,
+    });
 
+// Define JSON Schema for Kinesis request validation
+    const kinesisRequestModel = new apigateway.Model(this, 'KinesisRequestModel', {
+      modelName:'kinesisProxyBodyModel',
+      restApi: kinesisProxyApi,
+      contentType: 'application/json',
+      schema: {
+        schema: apigateway.JsonSchemaVersion.DRAFT4,
+        title: 'KinesisBodyRequestSchema',
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          StreamName: { type: apigateway.JsonSchemaType.STRING },
+          Data: { type: apigateway.JsonSchemaType.STRING }, // Specify format as 'base64'
+          PartitionKey: { type: apigateway.JsonSchemaType.STRING }
+        },
+        required: ['StreamName', 'Data', 'PartitionKey']
+      },
+    });
     const putRecordMethodOptionsProxy = {
       authorizer: cognitoAuthorizerKinesisProxy,
       authorizationType: AuthorizationType.COGNITO,
       requestParameters: {
         ['method.request.header.Content-Type']: true,
       },
-    };
-
-    const putRecordMethodOptionsRules = {
-      authorizer: cognitoAuthorizerKinesisRules,
-      authorizationType: AuthorizationType.COGNITO,
-      requestParameters: {
-        ['method.request.header.Content-Type']: true,
-      },
+      requestValidator: requestValidatorKinesisProxy,
+      requestModels: { 'application/json': kinesisRequestModel },
     };
 
     // Add a POST method to the resource with the Kinesis integration
@@ -607,6 +662,39 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
 
     // Create a resource for the API
     const kinesisRulesProxyResource = kinesisRulesProxyApi.root.addResource('rules');
+
+    // Create request validator
+    const requestValidatorKinesisRules = new apigateway.RequestValidator(this, 'RequestValidatorKinesisRules', {
+      restApi: kinesisRulesProxyApi,
+      validateRequestBody: true,
+      validateRequestParameters: true,
+    });
+
+    const kinesisRulesRequestModel = new apigateway.Model(this, 'KinesisRulesRequestModel', {
+      restApi: kinesisRulesProxyApi,
+      contentType: 'application/json',
+      schema: {
+        schema: apigateway.JsonSchemaVersion.DRAFT4,
+        title: 'KinesisRulesRequestSchema',
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          StreamName: { type: apigateway.JsonSchemaType.STRING },
+          Data: { type: apigateway.JsonSchemaType.STRING }, // Specify format as 'base64'
+          PartitionKey: { type: apigateway.JsonSchemaType.STRING }
+        },
+        required: ['StreamName', 'Data', 'PartitionKey']
+      },
+    });
+
+    const putRecordMethodOptionsRules = {
+      authorizer: cognitoAuthorizerKinesisRules,
+      authorizationType: AuthorizationType.COGNITO,
+      requestParameters: {
+        ['method.request.header.Content-Type']: true,
+      },
+      requestValidator: requestValidatorKinesisRules,
+      requestModels: { 'application/json': kinesisRulesRequestModel },
+    };
 
 
     // Add a POST method to the resource with the Kinesis integration

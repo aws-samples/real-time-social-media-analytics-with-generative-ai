@@ -1,6 +1,7 @@
 package com.amazonaws.services.msf.operators.asyncIO;
 
 import com.amazonaws.services.msf.DataStreamJob;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.AsyncFunction;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.json.JSONObject;
@@ -11,6 +12,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
+import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,14 +24,30 @@ import java.util.function.Supplier;
  * AsyncFunction implementation for invoking an embedding model using BedrockRuntimeAsyncClient
  * with specific enhancements for processing tweet-related data.
  */
-public class BedRockEmbeddingModelAsyncTweetFunction implements AsyncFunction<JSONObject, JSONObject> {
+public class BedRockEmbeddingModelAsyncTweetFunction extends RichAsyncFunction<JSONObject, JSONObject> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BedRockEmbeddingModelAsyncTweetFunction.class);
+
+    private transient BedrockRuntimeAsyncClient bedrockClient;
+
     private String region;
 
     public BedRockEmbeddingModelAsyncTweetFunction(String region) {
         this.region = region;
     }
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        bedrockClient = BedrockRuntimeAsyncClient.builder()
+                .region(Region.of(region))  // Use the specified AWS region
+                .build();
+    }
+
+    @Override
+    public void close() throws Exception {
+        bedrockClient.close();
+    }
+
 
     /**
      * Asynchronously invoke the embedding model and complete the ResultFuture with the result.
@@ -45,10 +63,6 @@ public class BedRockEmbeddingModelAsyncTweetFunction implements AsyncFunction<JS
             @Override
             public JSONObject get() {
                 try {
-                    // Create BedrockRuntimeAsyncClient for making asynchronous model invocations
-                    BedrockRuntimeAsyncClient runtime = BedrockRuntimeAsyncClient.builder()
-                            .region(Region.of(region))  // Use the specified AWS region
-                            .build();
 
                     // Extract tweet content from input JSON object
                     String stringBody = jsonObject.getString("tweet");
@@ -70,7 +84,7 @@ public class BedRockEmbeddingModelAsyncTweetFunction implements AsyncFunction<JS
                             .build();
 
                     // Invoke the model asynchronously and get the CompletableFuture for the response
-                    CompletableFuture<InvokeModelResponse> futureResponse = runtime.invokeModel(request);
+                    CompletableFuture<InvokeModelResponse> futureResponse = bedrockClient.invokeModel(request);
 
                     // Extract and process the response when it is available
                     JSONObject response = new JSONObject(

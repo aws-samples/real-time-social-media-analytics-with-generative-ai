@@ -1,7 +1,9 @@
 package com.amazonaws.services.msf.operators.asyncIO;
 
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.AsyncFunction;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
+import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +22,11 @@ import java.util.function.Supplier;
 /**
  * AsyncFunction implementation for invoking an embedding model using BedrockRuntimeAsyncClient.
  */
-public class BedRockEmbeddingModelAsyncCustomMessage implements AsyncFunction<JSONObject, JSONObject> {
+public class BedRockEmbeddingModelAsyncCustomMessage extends RichAsyncFunction<JSONObject, JSONObject> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BedRockEmbeddingModelAsyncCustomMessage.class);
 
+    private transient BedrockRuntimeAsyncClient bedrockClient;
 
     private String region;
 
@@ -31,6 +34,18 @@ public class BedRockEmbeddingModelAsyncCustomMessage implements AsyncFunction<JS
         this.region = region;
     }
 
+
+    @Override
+    public void open(Configuration parameters) throws Exception {
+        bedrockClient = BedrockRuntimeAsyncClient.builder()
+                .region(Region.of(region))  // Use the specified AWS region
+                .build();
+    }
+
+    @Override
+    public void close() throws Exception {
+        bedrockClient.close();
+    }
     /**
      * Asynchronously invoke the embedding model and complete the ResultFuture with the result.
      *
@@ -45,10 +60,6 @@ public class BedRockEmbeddingModelAsyncCustomMessage implements AsyncFunction<JS
             @Override
             public JSONObject get() {
                 try {
-                    // Create BedrockRuntimeAsyncClient for making asynchronous model invocations
-                    BedrockRuntimeAsyncClient runtime = BedrockRuntimeAsyncClient.builder()
-                            .region(Region.of(region))  // Use the specified AWS region
-                            .build();
 
                     // Extract text from input JSON object
                     String stringBody = jsonObject.getString("text");
@@ -70,7 +81,7 @@ public class BedRockEmbeddingModelAsyncCustomMessage implements AsyncFunction<JS
                             .build();
 
                     // Invoke the model asynchronously and get the CompletableFuture for the response
-                    CompletableFuture<InvokeModelResponse> futureResponse = runtime.invokeModel(request);
+                    CompletableFuture<InvokeModelResponse> futureResponse = bedrockClient.invokeModel(request);
 
                     // Extract and process the response when it is available
                     JSONObject response = new JSONObject(
