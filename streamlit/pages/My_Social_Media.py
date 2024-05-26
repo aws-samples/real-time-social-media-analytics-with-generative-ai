@@ -90,7 +90,7 @@ for message in st.session_state.kinesis_messages:
         st.markdown(message["content"])
 
 with st.sidebar:
-    st.text(f"Welcome, {authenticator.get_username()}")
+    st.text(f"Welcome!")
     st.button("Logout", "logout_btn", on_click=logout)
 
 # React to user input

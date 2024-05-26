@@ -167,10 +167,16 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
       },
     });
 
-    // Define a Lambda layer
-    const langChainLayer = new lambda.LayerVersion(this, 'LangchainLayer', {
+    // Define a Lambda layers
+    const langChainLayer = new lambda.LayerVersion(this, 'langchain_0_1_20', {
       compatibleRuntimes: [lambda.Runtime.PYTHON_3_10],
-      code: lambda.Code.fromAsset('./lambda-layers/langchain'), // Replace with the path to your layer code
+      code: lambda.Code.fromAsset('./lambda-layers/langchain_0_1_20'), // Replace with the path to your layer code
+      compatibleArchitectures: [lambda.Architecture.ARM_64, lambda.Architecture.X86_64]
+    });
+
+    const langChainCommunityLayer = new lambda.LayerVersion(this, 'langchain-community_0_0_33', {
+      compatibleRuntimes: [lambda.Runtime.PYTHON_3_10],
+      code: lambda.Code.fromAsset('./lambda-layers/langchain-community_0_0_33'), // Replace with the path to your layer code
       compatibleArchitectures: [lambda.Architecture.ARM_64, lambda.Architecture.X86_64]
     });
 
@@ -496,10 +502,10 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
     startFlinkApplicationResource.node.addDependency(managedFlinkApplication);
 
     // Add the layer using the layer ARN
-    const boto3LayerARN = 'arn:aws:lambda:' + this.region + ':770693421928:layer:Klayers-p38-boto3:25';
+    const boto3LayerARN = 'arn:aws:lambda:' + this.region + ':770693421928:layer:Klayers-p310-boto3:13';
     const opensearchLayerARN = 'arn:aws:lambda:' + this.region + ':770693421928:layer:Klayers-p38-opensearch-py:17';
 
-    twitterRagFunction.addLayers(langChainLayer, lambda.LayerVersion.fromLayerVersionArn(this, 'Boto3Layer', boto3LayerARN), lambda.LayerVersion.fromLayerVersionArn(this, 'OpenSearchLayer', opensearchLayerARN));
+    twitterRagFunction.addLayers(langChainLayer, langChainCommunityLayer, lambda.LayerVersion.fromLayerVersionArn(this, 'Boto3Layer', boto3LayerARN), lambda.LayerVersion.fromLayerVersionArn(this, 'OpenSearchLayer', opensearchLayerARN));
 
 
     const cognitoAuthorizerBedrock = new apigateway.CognitoUserPoolsAuthorizer(this, 'cognitoAuthorizerBedrock', {
