@@ -133,7 +133,7 @@ export class RealTimeSocialMediaAnalyticsGenAi extends cdk.Stack {
       statements: [
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
-          resources: ["arn:aws:bedrock:"+this.region+"::foundation-model/anthropic.claude-instant-v1","arn:aws:bedrock:"+this.region+"::foundation-model/anthropic.claude-3-haiku-20240307-v1:0","arn:aws:bedrock:"+this.region+"::foundation-model/amazon.titan-embed-text-v1"],
+          resources: ["arn:aws:bedrock:"+this.region+"::foundation-model/anthropic.claude-3-haiku-20240307-v1:0","arn:aws:bedrock:"+this.region+"::foundation-model/amazon.titan-embed-text-v1"],
           actions: ["bedrock:GetFoundationModel","bedrock:InvokeModel"]
         })
       ],
