@@ -20,7 +20,7 @@ In this AWS Sample you will deploy an AWS Architecure that is able to combine st
 9.	Amazon Bedrock returns the embedded question
 10.	The Lambda function using LangChain, does a semantic search in Amazon OpenSearch and retrieves the relevant documents related to the question.
 11.	Amazon Opensearch returns to the AWS Lambda function, the relevant documents with the vectors for answering the question.
-12.	The Lambda Function using LangChain, Prompt Engineering, provides the question and relevant vectors for answering the question to Anthropic Claude Model hosted by Amazon Bedrock
+12.	The Lambda Function using LangChain, Prompt Engineering, provides the question and relevant vectors for answering the question to Anthropic Claude hosted on Amazon Bedrock
 13.	Amazon Bedrock returns the answer to the question to the Lambda function
 14.	The response is delivered to API Gateway
 15.	API Gateway provides the response to the questions of the user in the Streamlit application
@@ -45,12 +45,12 @@ To implement this AWS Sample, you need to have the following in your local envir
 -   Download CognitoAuthenticator
   `pip install streamlit-cognito-auth`
 
-You will also need to request GenAI Models access for Amazon Titan Embeddings Model and Anthropic Claude Foundation Models in Amazon Bedrock
+You will also need to request GenAI Models access for Amazon Titan Embeddings Model and Anthropic Claude Foundation Models on Amazon Bedrock
 
 Follow the instructions in order to request the models:
 
 
-1.	Go to the Amazon Bedrock Console, by searching Bedrock, and click on the service
+1.	Go to the Amazon Bedrock Console, by searching Amazon Bedrock, and click on the service
 
 ![Amazon Bedrock console](diagrams-screenshots/bedrock-console.png "Amazon Bedrock console")
 
@@ -69,9 +69,9 @@ Follow the instructions in order to request the models:
 5.	Select within Amazon
 a.	Titan Embeddings G1 – Text
 6.	Select within Anthropic
-a.	Claude Instant
+a.	Claude 3 Haiku
 
-![Claude Instant model](diagrams-screenshots/claude-instant-model.png "Claude Instant model")
+![Claude Instant model](diagrams-screenshots/claude-haiku-model.png "Claude Instant model")
 
 7.	Go to the bottom and click Request model access
 
