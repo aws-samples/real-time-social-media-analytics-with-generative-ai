@@ -1,10 +1,10 @@
 import json
 import boto3
-from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-from langchain.embeddings.bedrock import BedrockEmbeddings
-from langchain.vectorstores import OpenSearchVectorSearch
+from langchain_community.embeddings.bedrock import BedrockEmbeddings
+from langchain_community.vectorstores import OpenSearchVectorSearch
+from langchain_community.chat_models import BedrockChat
 from opensearchpy import RequestsHttpConnection
 import os
 
@@ -15,8 +15,7 @@ def lambda_handler(event, context):
 
     body = json.loads(event["body"])
     message = body.get("message", "")
-    print(f"query: {message}")
-
+    print(f"Query: {message}")
 
     embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=bedrock_runtime)
 
@@ -40,7 +39,13 @@ def lambda_handler(event, context):
         connection_class=RequestsHttpConnection,
     )
 
-    llm = Bedrock(model_id="anthropic.claude-instant-v1", client=bedrock_runtime, model_kwargs={"temperature": 0, "max_tokens_to_sample": 2048})
+    model_kwargs={"temperature": 0, "max_tokens": 4096}
+
+    llm = BedrockChat(
+        model_id="anthropic.claude-3-haiku-20240307-v1:0",
+        client=bedrock_runtime,
+        model_kwargs=model_kwargs
+    )
 
     template = """As a helpful agent that is an expert analysing tweets, please answer the question using only the provided tweets from the context in <context></context> tags.
                   If you don't see valuable information on the tweets provided in the context in <context></context> tags, say you don't have enough tweets related to the question.
@@ -146,10 +151,10 @@ def lambda_handler(event, context):
         chain_type_kwargs = {"prompt": prompt}
     )
 
-    answer = chain.run({"query": message})
-    print(answer)
+    answer = chain.invoke({"query": message})
+    print(f"Answer: " + answer["result"])
 
     return {
         'statusCode': 200,
-        'body': answer
+        'body': answer["result"]
     }

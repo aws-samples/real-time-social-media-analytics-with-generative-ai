@@ -107,7 +107,7 @@ with st.sidebar.form(key ='Options', border=False):
     submit = st.form_submit_button("Submit")
 
 with st.sidebar:
-    st.text(f"Welcome, {authenticator.get_username()}")
+    st.text(f"Welcome!")
     st.button("Logout", "logout_btn", on_click=logout)
 
 # Submit available options using send_message function
